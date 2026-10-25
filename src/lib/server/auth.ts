@@ -117,6 +117,10 @@ export function refreshSessionCookie(cookies: Cookies, sessionId: string) {
 	});
 }
 
+export function getLoginCallbackUrl(url: URL): string {
+	return new URL(`${base}/login/callback`, config.PUBLIC_ORIGIN || url.origin).toString();
+}
+
 export async function findUser(
 	sessionId: string,
 	coupledCookieHash: string | undefined,
@@ -148,7 +152,7 @@ export async function findUser(
 				try {
 					// Attempt to refresh the token
 					const newTokenSet = await refreshOAuthToken(
-						{ redirectURI: `${config.PUBLIC_ORIGIN}${base}/login/callback` },
+						{ redirectURI: getLoginCallbackUrl(url) },
 						session.oauth.refreshToken,
 						url
 					);
@@ -550,7 +554,7 @@ export async function authenticateRequest(
 export async function triggerOauthFlow({ url, locals, cookies }: RequestEvent): Promise<Response> {
 	// const referer = request.headers.get("referer");
 	// let redirectURI = `${(referer ? new URL(referer) : url).origin}${base}/login/callback`;
-	let redirectURI = `${url.origin}${base}/login/callback`;
+	let redirectURI = getLoginCallbackUrl(url);
 
 	// TODO: Handle errors if provider is not responding
 
