@@ -5,7 +5,7 @@ import { updateUser } from "./updateUser";
 import { ObjectId } from "mongodb";
 import { DEFAULT_SETTINGS } from "$lib/types/Settings";
 import { defaultModel } from "$lib/server/models";
-import * as auth from "$lib/server/auth";
+import { findUser, getLoginCallbackUrl } from "$lib/server/auth";
 import type { TokenSet } from "openid-client";
 
 const userData = {
@@ -142,8 +142,7 @@ describe("login", () => {
 		await updateUser({ userData, locals, cookies: cookiesMock, token });
 
 		// updateUser creates a new sessionId, so we need to use the updated value
-		const user = (await auth.findUser(locals.sessionId, undefined, new URL("http://localhost")))
-			.user;
+		const user = (await findUser(locals.sessionId, undefined, new URL("http://localhost"))).user;
 
 		assert.exists(user);
 
@@ -162,7 +161,7 @@ describe("login", () => {
 	it("should build a safe callback URL from the current request origin when PUBLIC_ORIGIN is unset", () => {
 		const requestUrl = new URL("https://app.example.com/protected/path");
 
-		expect(auth.getLoginCallbackUrl(requestUrl)).toBe("https://app.example.com/login/callback");
+		expect(getLoginCallbackUrl(requestUrl)).toBe("https://app.example.com/login/callback");
 	});
 
 	it("should migrate pre-existing settings for pre-existing user", async () => {
